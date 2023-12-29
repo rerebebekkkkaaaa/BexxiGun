@@ -17,8 +17,11 @@
 const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 8;
-int triggerFlyWheel = 0;
+int buttonPress = 0;
 int flyWheelrunning =0;
+//variables to keep track of the timing of recent interrupts
+unsigned long button_time = 0;  
+unsigned long last_button_time = 0; 
 
 CRGB leds[NUM_LEDS];
 // notes in the melody:
@@ -31,46 +34,42 @@ int noteDurations[] = {
   500, 500, 300, 150
 };
 
-void StartMotor(){
+void  StartMotor(){
   
   flyWheelrunning =1;
-  digitalWrite(ESPLED_PIN, !digitalRead(FLY_PIN)); 
+  digitalWrite(ESPLED_PIN, !digitalRead(ESPLED_PIN)); 
       Serial.write("Starting motor");
     for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
       // powering up the motor PWM
       ledcWrite(ledChannel, dutyCycle);
-      delay(50);
+      delay(5);
     }
-    delay(1000);
-    triggerFlyWheel =0;
+    buttonPress = 0;
+     Serial.write("Started motor");
+
 
 
 
 
 }
 
-void StopMotor(){
+void  StopMotor(){
+ 
+  buttonPress = 0;
+  Serial.write("Stopping motor");
+  ledcWrite(ledChannel, 0);
+  delay(4000);
   flyWheelrunning =0;
-  digitalWrite(ESPLED_PIN, !digitalRead(FLY_PIN)); 
-          Serial.write("Stopping motor");
-    for(int dutyCycle = 255; dutyCycle >= 0; dutyCycle--){   
-      // powering up the motor PWM
-      ledcWrite(ledChannel, dutyCycle);
-      delay(50);
-    }
-    delay(1000);
-    triggerFlyWheel =0;
-
-
+  digitalWrite(ESPLED_PIN, !digitalRead(ESPLED_PIN)); 
+  Serial.write("Stopped motor");
 }
-void MotorISR(){
-  Serial.write("MotorISR");
-  if(!triggerFlyWheel){
-    triggerFlyWheel=1;
-
+void IRAM_ATTR MotorISR(){
+  button_time = millis();
+  if (button_time - last_button_time > 250)
+  {
+     buttonPress=1;
+       last_button_time = button_time;
   }
-  delay(1000);
-
 }
 
 void setup() { 
@@ -88,17 +87,20 @@ void setup() {
 }
 
 void loop() {
-  Serial.write(48+digitalRead(BUTTON_PIN));
+  //Serial.write(48+flyWheelrunning);
+  if(buttonPress){
 
-  delay(1000);
-  if(triggerFlyWheel){
       if(flyWheelrunning){
         StopMotor();
       }
       else{
         StartMotor();
       }
-
+    
   }
+  delay(1000);
+
+
+  
   
 }
