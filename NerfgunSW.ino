@@ -1,12 +1,9 @@
-/// @file    Blink.ino
-/// @brief   Blink the first LED of an LED strip
-/// @example Blink.ino
-
 #include <Arduino.h>
 #include <FastLED.h>
-#include "pitches.h"
 
 #define NUM_LEDS 10
+
+#define SHORT_PRESS_TIME 200
 
 //Pins
 #define DATA_PIN 15
@@ -25,13 +22,8 @@ const int freqBuzz0r = 2000;
 const int pwmChanBuzz0r = 3;
 const int resBuzz0r = 8;
 
-volatile int buttonPress = 0;
-int flyWheelrunning =0;
-//variables to keep track of the timing of recent interrupts
-unsigned long button_time = 0;  
-unsigned long last_button_time = 0; 
-
 CRGB leds[NUM_LEDS];
+
 // notes in the melody:
 int melody[] = {
  2000 , 2050 ,1950, 2050 , 2100, 2200, 2300, 2500, 2700, 2900, 3100, 3200, 3600 
@@ -42,45 +34,109 @@ int noteDurations[] = {
   280, 40, 40, 60,60,60,60,60,60,60,60,60,60
 };
 
-void  StartMotor(){
-  
-  flyWheelrunning =1;
-  digitalWrite(ESPLED_PIN, !digitalRead(ESPLED_PIN)); 
-      Serial.write("Starting motor");
-    for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
-      // powering up the motor PWM
-      ledcWrite(pwmChanMotor, dutyCycle);
-      delay(10);
+
+
+volatile uint32_t usLastShortPress=0;
+volatile uint32_t usLastLongPress=0;
+
+// B U T T O N    P U L L   L O O P
+
+void ButtonControl(void  * param) {
+  bool isDown=false;
+  uint32_t uLastDown = 0;
+  uint32_t uCurRun = millis();
+  for(;;) {
+    uCurRun = millis();
+    if(digitalRead(BUTTON_PIN)==false and isDown==false) {
+      isDown=true;
+      uint32_t uLastDown = millis();
+      Serial.println("button down");
     }
-    buttonPress = 0;
-     Serial.write("Started motor");
-
-
-
-
-
-}
-
-void  StopMotor(){
- 
-  buttonPress = 0;
-  Serial.write("Stopping motor");
-  ledcWrite(pwmChanMotor, 0);
-  delay(4000);
-  flyWheelrunning =0;
-  digitalWrite(ESPLED_PIN, !digitalRead(ESPLED_PIN)); 
-  Serial.write("Stopped motor");
-}
-void IRAM_ATTR MotorISR(){
-  
-  button_time = millis();
-  if (button_time - last_button_time > 250)
-  {
-     buttonPress=1;
-       last_button_time = button_time;
+    if(digitalRead(BUTTON_PIN)==true and isDown == true) {
+      if(uLastDown+SHORT_PRESS_TIME>uCurRun) {
+        usLastShortPress=uCurRun;
+      }
+      isDown=false;
+      Serial.println("button short");
+    }
+    if(uLastDown+SHORT_PRESS_TIME<=uCurRun and isDown == true) {
+      usLastLongPress=uCurRun;
+      Serial.println("button long");
+      while(!digitalRead(BUTTON_PIN)) {
+        delay(1); //wait until button is released
+      }
+      isDown=false;
+    }
+    delay(1);
   }
 }
 
+
+
+// M O T O R   C O N T R O L
+enum MotorState {
+  MOTOR_OFF = 0,
+  MOTOR_STARTING = 1,
+  MOTOR_SPINNING = 2,
+  MOTOR_FREEFLY = 3
+};
+
+void MotorControl(void * param) {
+  MotorState mostCur;
+  uint32_t dutyCur=0;
+  
+  //Store last run so we can check if something happend since then
+  uint32_t uLastRun=1;
+
+  for(;;) {
+    uint32_t uCurRun=millis();
+    
+    switch(mostCur) {
+      case MOTOR_OFF:
+        //Wait for LongPress to turn motor on
+        if(uLastRun<usLastLongPress) {
+          mostCur=MOTOR_STARTING;
+          dutyCur=0;
+          Serial.write("Starting motor");
+        }
+        break;
+      case MOTOR_STARTING:
+        //increase motor speed for 254 * 10 ms = 2.54seconds
+        if(dutyCur<255) {
+          ledcWrite(pwmChanMotor, dutyCur);
+          dutyCur+=1;
+        } else {
+          mostCur=MOTOR_SPINNING;
+          digitalWrite(ESPLED_PIN, true);
+          ledcWrite(pwmChanMotor, 255);
+        }
+        break;
+      case MOTOR_SPINNING:
+        if(uLastRun<usLastLongPress) {
+          mostCur=MOTOR_FREEFLY;
+          dutyCur=0;
+          Serial.write("Stoping motor");
+          digitalWrite(ESPLED_PIN, false);
+        }
+        break;
+      case MOTOR_FREEFLY:
+        if(dutyCur==0) {
+          ledcWrite(pwmChanMotor, 0);
+        }
+        dutyCur+=1;
+        if(dutyCur >= 400) {
+          mostCur=MOTOR_OFF;
+        }
+        break;
+    }
+    uLastRun=uCurRun;
+    delay(10); 
+  }
+}
+
+
+TaskHandle_t taskButtonPull;
+TaskHandle_t taskMotorControl;
 void setup() { 
   bool isPWMMotorOK=false;
   bool isPWMBuzz0rOK=false;
@@ -107,10 +163,25 @@ void setup() {
   ledcAttachPin(BUZZ0R_PIN, pwmChanBuzz0r);
   Serial.printf("PWM Buzz0r: %d", isPWMBuzz0rOK);*/
 
-  attachInterrupt(BUTTON_PIN, MotorISR, FALLING);
-
   //digitalWrite(IROUT_PIN, HIGH);
-  delay(250);
+
+   xTaskCreatePinnedToCore(
+                    ButtonControl,   /* Task function. */
+                    "ButtonPuller",     /* name of task. */
+                    1024,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &taskButtonPull,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */ 
+   delay(250);
+   xTaskCreatePinnedToCore(
+                    MotorControl,   /* Task function. */
+                    "MotorControl",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &taskMotorControl,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */ 
 }
 
 void loop() {
@@ -123,19 +194,5 @@ void loop() {
   //ledcWrite(BUZZ0R_PIN, 128); //stop Sound
   //ledcWrite(BUZZ0R_PIN, 0); //stop Sound
 
-  if(buttonPress){
-
-      if(flyWheelrunning){
-        StopMotor();
-      }
-      else{
-        StartMotor();
-      }
-    
-  }
   delay(1000);
-
-
-  
-  
 }
