@@ -3,7 +3,7 @@
 
 #define NUM_LEDS 10
 
-#define SHORT_PRESS_TIME 200
+#define SHORT_PRESS_TIME 2000
 
 //Pins
 #define DATA_PIN 15
@@ -19,7 +19,7 @@ const int pwmChanMotor = 0;
 const int resMotor = 8;
 
 const int freqBuzz0r = 2000;
-const int pwmChanBuzz0r = 3;
+const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
 
 CRGB leds[NUM_LEDS];
@@ -49,7 +49,7 @@ void ButtonControl(void  * param) {
     uCurRun = millis();
     if(digitalRead(BUTTON_PIN)==false and isDown==false) {
       isDown=true;
-      uint32_t uLastDown = millis();
+      uLastDown = uCurRun;
       Serial.println("button down");
     }
     if(digitalRead(BUTTON_PIN)==true and isDown == true) {
