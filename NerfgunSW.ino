@@ -218,16 +218,15 @@ void setup() {
 
 void loop() {
   Serial.write(48+digitalRead(IRIN_PIN));
-  //digitalWrite(IROUT_PIN, !digitalRead(IROUT_PIN));
-  /*for (int thisNote = 0; thisNote < sizeof(noteDurations) ; thisNote++) {
-      ledcWriteTone(BUZZ0R_PIN, melody[thisNote]);
-      delay(noteDurations[thisNote]);
-  }*/
-  //ledcWrite(BUZZ0R_PIN, 128); //stop Sound
-  //ledcWrite(BUZZ0R_PIN, 0); //stop Sound
-
-  //uint32_t uCurRun = millis();
-
-
-  delay(1000);
+  for(int i=0;i<NUM_LEDS-1;i++) {
+    leds[i+1]=leds[i];
+    if(leds[0]==leds[NUM_LEDS-1]) {
+      FastLED.show();
+      CRGB randomcolor  = CHSV(random(192), 255, 255);
+      leds[0]=randomcolor;
+      delay(200);
+    }
+    FastLED.show();
+    delay(50);
+  }
 }
