@@ -23,23 +23,42 @@ const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
 
 CRGB leds[NUM_LEDS];
+#define BLINGBLING_MAXINDEX 3
 
-#define MELODY_LENGTH 11
-// notes in the melody:
-int melody[] = {
+#define PEWPEW_MAXINDEX 2
+#define SOUND_LENGTH 11
+
+int pewpewSounds[PEWPEW_MAXINDEX][SOUND_LENGTH]={
+  {
  2000 , 2050 ,1950, 2050 , 2100, 2200, 2300, 2500, 2700, 2900,0
+},
+{
+ 1500 , 1050 ,2250, 2050 , 2100, 2000, 2800, 2000, 3000, 1000,0
+}
 };
-
-// note durations: 4 = quarter note, 8 = eighth note, etc, also called tempo:
-int noteDurations[] = {
+int pewpewLength[PEWPEW_MAXINDEX][SOUND_LENGTH] ={
+{
   100, 20, 20, 30,30,30,30,30,30,30,10
+},{
+  300, 200, 20, 30,30,90,30,30,60,300,10
+}
 };
-
 
 
 volatile uint32_t usLastShortPress=0;
 volatile uint32_t usLastLongPress=0;
-volatile uint32_t usLastPewPewRGBRun=0;
+volatile uint32_t usLastPewPewRun=0;
+volatile uint32_t usLastRGBRun=0;
+
+volatile int buttonWasPressed = 0;
+
+enum MotorState {
+  MOTOR_OFF = 0,
+  MOTOR_STARTING = 1,
+  MOTOR_SPINNING = 2,
+  MOTOR_FREEFLY = 3
+};
+volatile MotorState mostCur;
 
 // B U T T O N    P U L L   L O O P
 
@@ -76,15 +95,9 @@ void ButtonControl(void  * param) {
 
 
 // M O T O R   C O N T R O L
-enum MotorState {
-  MOTOR_OFF = 0,
-  MOTOR_STARTING = 1,
-  MOTOR_SPINNING = 2,
-  MOTOR_FREEFLY = 3
-};
+
 
 void MotorControl(void * param) {
-  MotorState mostCur;
   uint32_t dutyCur=0;
   
   //Store last run so we can check if something happend since then
@@ -138,28 +151,124 @@ void MotorControl(void * param) {
 
 // P E W  P E W  C O N T R O L
 void PewPewControl(void * param){
+
+int pewpewIndex=0;
   for(;;){
-      if(usLastPewPewRGBRun<usLastShortPress){
+
+      if(usLastPewPewRun<usLastShortPress){
 Serial.write("PEW PEW PEW PEW"); 
+
 /*
       for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
       ledcWrite(pwmChanBuzz0r, dutyCycle);
       delay(10);
     }*/
-      for(int i = 0; i < MELODY_LENGTH; i++){   
-      ledcWriteTone(pwmChanBuzz0r, melody[i]);
-      delay(noteDurations[i]);
+      for(int i = 0; i < SOUND_LENGTH; i++){   
+      ledcWriteTone(pwmChanBuzz0r, pewpewSounds[pewpewIndex][i]);
+      delay(pewpewLength[pewpewIndex][i]);
+
+    //reset to first sound in case we are at the end of the array
+      if(pewpewIndex == PEWPEW_MAXINDEX-1){
+        pewpewIndex =0;
+      }
+      else{
+        pewpewIndex++;
+      }
     }
   }
-  usLastPewPewRGBRun=usLastShortPress;
+  usLastPewPewRun=usLastShortPress;
   delay(10);
+
   }
 
+
+}
+
+// B L I N G  B L I N G  C O N T R O L
+//initial rgb
+void RGBRandomMode(){
+  for(int i=0;i<NUM_LEDS-1;i++) {
+    leds[i+1]=leds[i];
+    if(leds[0]==leds[NUM_LEDS-1]) {
+      FastLED.show();
+      CRGB randomcolor  = CHSV(random(192), 255, 255);
+      leds[0]=randomcolor;
+      delay(200);
+    }
+    FastLED.show();
+    delay(50);
+  }
+   Serial.write("BLING BLING RGB"); 
+
+}
+
+//button controlled rgb
+void Gradient3Mode(){
+  CRGB randomcolor1  = CHSV(random(255), 255, 255);
+  CRGB randomcolor2  = CHSV(random(255), 255, 255);
+  CRGB randomcolor3  = CHSV(random(255), 255, 255);
+  	fill_gradient_RGB(leds,NUM_LEDS, randomcolor1,randomcolor2,randomcolor3);
+          FastLED.show();
+    delay(50);
+     Serial.write("BLING BLING random 3 grad"); 
+
+}
+void SolidBlueMode(){
+
+	fill_solid (leds, NUM_LEDS,  CRGB::Blue);
+      FastLED.show();
+    delay(50);
+     Serial.write("BLING BLING blue"); 
+}
+void RainbowMode(){
+  	fill_rainbow_circular(leds,NUM_LEDS,0,255);
+    FastLED.show();
+    delay(50);
+     Serial.write("BLING BLING Rainbow"); 
+}
+//motor rgb
+void SolidRedMode(){
+
+	fill_solid (leds, NUM_LEDS,  CRGB::Red);
+      FastLED.show();
+    delay(50);
+     Serial.write("BLING BLING red"); 
+}
+
+void BlingBlingControl(void * param){
+  int blingblingIndex=0;
+  for(;;){
+    //change BlingBling
+    if(usLastRGBRun<usLastShortPress){
+      buttonWasPressed =1;
+      Serial.write("BLING BLING"); 
+    switch ( blingblingIndex )
+      {
+      case 0:
+        Gradient3Mode();
+        blingblingIndex++;
+        break;
+      case 1:
+        SolidBlueMode();
+        blingblingIndex++;
+        break;
+      case 2:
+        RainbowMode();
+        blingblingIndex=0;
+        break;
+      default:
+        break;
+      }
+    }
+    usLastRGBRun=usLastShortPress;
+    delay(50);
+  }
 }
 
 TaskHandle_t taskButtonPull;
 TaskHandle_t taskMotorControl;
 TaskHandle_t taskPewPew;
+TaskHandle_t taskBlingBling;
 void setup() { 
   bool isPWMMotorOK=false;
   bool isPWMBuzz0rOK=false;
@@ -205,8 +314,8 @@ void setup() {
                     1,           /* priority of the task */
                     &taskMotorControl,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */ 
-                    delay(250);
-   xTaskCreatePinnedToCore(
+  delay(250);
+  xTaskCreatePinnedToCore(
                     PewPewControl,   /* Task function. */
                     "PewPewControl",     /* name of task. */
                     10000,       /* Stack size of task */
@@ -214,19 +323,27 @@ void setup() {
                     1,           /* priority of the task */
                     &taskPewPew,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */ 
+  delay(250);
+  xTaskCreatePinnedToCore(
+                    BlingBlingControl,   /* Task function. */
+                    "BlingBlingControl",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &taskBlingBling,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */ 
 }
 
 void loop() {
-  Serial.write(48+digitalRead(IRIN_PIN));
-  for(int i=0;i<NUM_LEDS-1;i++) {
-    leds[i+1]=leds[i];
-    if(leds[0]==leds[NUM_LEDS-1]) {
-      FastLED.show();
-      CRGB randomcolor  = CHSV(random(192), 255, 255);
-      leds[0]=randomcolor;
-      delay(200);
-    }
-    FastLED.show();
-    delay(50);
+  //Serial.write(48+digitalRead(IRIN_PIN));
+  if(buttonWasPressed == 0 && mostCur == MOTOR_OFF){
+    RGBRandomMode();
   }
+  else if(mostCur == MOTOR_SPINNING){
+    SolidRedMode();
+    buttonWasPressed = 0;
+  }
+
+  delay(50);
 }
+
