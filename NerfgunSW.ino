@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
-#define NUM_LEDS 10
+#define NUM_LEDS 7
 
-#define SHORT_PRESS_TIME 2000
+#define SHORT_PRESS_TIME 1000
 
 //Pins
 #define DATA_PIN 15
@@ -24,20 +24,22 @@ const int resBuzz0r = 8;
 
 CRGB leds[NUM_LEDS];
 
+#define MELODY_LENGTH 11
 // notes in the melody:
 int melody[] = {
- 2000 , 2050 ,1950, 2050 , 2100, 2200, 2300, 2500, 2700, 2900, 3100, 3200, 3600 
+ 2000 , 2050 ,1950, 2050 , 2100, 2200, 2300, 2500, 2700, 2900,0
 };
 
 // note durations: 4 = quarter note, 8 = eighth note, etc, also called tempo:
 int noteDurations[] = {
-  280, 40, 40, 60,60,60,60,60,60,60,60,60,60
+  100, 20, 20, 30,30,30,30,30,30,30,10
 };
 
 
 
 volatile uint32_t usLastShortPress=0;
 volatile uint32_t usLastLongPress=0;
+volatile uint32_t usLastPewPewRGBRun=0;
 
 // B U T T O N    P U L L   L O O P
 
@@ -134,9 +136,30 @@ void MotorControl(void * param) {
   }
 }
 
+// P E W  P E W  C O N T R O L
+void PewPewControl(void * param){
+  for(;;){
+      if(usLastPewPewRGBRun<usLastShortPress){
+Serial.write("PEW PEW PEW PEW"); 
+/*
+      for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
+      ledcWrite(pwmChanBuzz0r, dutyCycle);
+      delay(10);
+    }*/
+      for(int i = 0; i < MELODY_LENGTH; i++){   
+      ledcWriteTone(pwmChanBuzz0r, melody[i]);
+      delay(noteDurations[i]);
+    }
+  }
+  usLastPewPewRGBRun=usLastShortPress;
+  delay(10);
+  }
+
+}
 
 TaskHandle_t taskButtonPull;
 TaskHandle_t taskMotorControl;
+TaskHandle_t taskPewPew;
 void setup() { 
   bool isPWMMotorOK=false;
   bool isPWMBuzz0rOK=false;
@@ -159,9 +182,9 @@ void setup() {
   Serial.printf("PWM Motor: %d", isPWMMotorOK);
 
   //set up the nerv buzz0r
-  /*isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
+  isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
   ledcAttachPin(BUZZ0R_PIN, pwmChanBuzz0r);
-  Serial.printf("PWM Buzz0r: %d", isPWMBuzz0rOK);*/
+  Serial.printf("PWM Buzz0r: %d", isPWMBuzz0rOK);
 
   //digitalWrite(IROUT_PIN, HIGH);
 
@@ -182,6 +205,15 @@ void setup() {
                     1,           /* priority of the task */
                     &taskMotorControl,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */ 
+                    delay(250);
+   xTaskCreatePinnedToCore(
+                    PewPewControl,   /* Task function. */
+                    "PewPewControl",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &taskPewPew,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */ 
 }
 
 void loop() {
@@ -193,6 +225,9 @@ void loop() {
   }*/
   //ledcWrite(BUZZ0R_PIN, 128); //stop Sound
   //ledcWrite(BUZZ0R_PIN, 0); //stop Sound
+
+  //uint32_t uCurRun = millis();
+
 
   delay(1000);
 }
