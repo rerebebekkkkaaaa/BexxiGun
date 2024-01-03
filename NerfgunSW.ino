@@ -4,10 +4,8 @@ Main Control File & Pins
 */
 #include <Arduino.h>
 #include <FastLED.h>
-
-
-
-
+#include <WiFi.h>
+#include "pitches.h"
 
 //Pins
 #define DATA_PIN 15
@@ -18,8 +16,14 @@ Main Control File & Pins
 #define IROUT_PIN 12
 #define IRIN_PIN 13
 
+enum GunState {
+  PARTY_MODE = 0,
+  DEATH_MODE = 1,
+  SNEAK_MODE = 2
+};
 
 // Motor Globals
+void MotorControl(void * param);
 const int freqMotor = 2000;
 const int pwmChanMotor = 0;
 const int resMotor = 8;
@@ -32,18 +36,23 @@ enum MotorState {
 volatile MotorState mostCur;
 
 // Pew Pew Globals
+void PewPewControl(void * param);
 const int freqBuzz0r = 2000;
 const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
+volatile GunState PewCur;
 
 // Bling Bling Globals
+void BlingBlingControl(void * param);
 #define NUM_LEDS 7
 CRGB leds[NUM_LEDS];
+volatile GunState BlingCur;
 
 // Button Globals
+void ButtonControl(void  * param);
 volatile uint32_t usLastShortPress=0;
 volatile uint32_t usLastLongPress=0;
-volatile int buttonWasPressed = 0;
+volatile int initialState = 0;
 
 // Task handles
 TaskHandle_t taskButtonPull;
@@ -120,13 +129,14 @@ void setup() {
 
 void loop() {
   //Serial.write(48+digitalRead(IRIN_PIN));
-  if(buttonWasPressed == 0 && mostCur == MOTOR_OFF){
+  
+  if(initialState == 0 && mostCur == MOTOR_OFF){
     RGBRandomMode();
   }
   else if(mostCur == MOTOR_SPINNING){
-    SolidRedMode();
-    buttonWasPressed = 0;
+    initialState = 0; //go back to init after motor off
   }
+ 
 
   delay(50);
 }
