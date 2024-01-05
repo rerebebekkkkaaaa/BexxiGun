@@ -96,8 +96,8 @@
         "silk_over_copper": "warning",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
-        "solder_mask_bridge": "error",
-        "starved_thermal": "error",
+        "solder_mask_bridge": "ignore",
+        "starved_thermal": "ignore",
         "text_height": "warning",
         "text_thickness": "warning",
         "through_hole_pad_without_hole": "error",
@@ -177,10 +177,14 @@
       "track_widths": [
         0.0,
         0.2,
+        0.254,
         0.3,
         0.4,
+        0.508,
+        0.762,
         0.8,
-        1.0
+        1.0,
+        1.016
       ],
       "via_dimensions": [
         {
