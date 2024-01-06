@@ -1,5 +1,5 @@
 arduino ide: 
--board:"ESP32 Dev Module"
+-board:"ESP32 Dev Module" oder "AI Thinker ESP32-CAM"
 -Port(linux):"/dev/ttyUSB0"
 
 
@@ -12,3 +12,11 @@ flashen:
 5.flash pin aus
 6.power aus
 7.power an 
+
+
+
+LIBS:
+FastLed
+https://github.com/me-no-dev/ESPAsyncWebServer
+https://github.com/me-no-dev/AsyncTCP
+https://github.com/ayushsharma82/AsyncElegantOTA

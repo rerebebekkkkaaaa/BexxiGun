@@ -5,7 +5,10 @@ Main Control File & Pins
 #include <Arduino.h>
 #include <FastLED.h>
 #include <WiFi.h>
+#include <AsyncElegantOTA.h>
+#include "ESPAsyncWebServer.h"
 #include "pitches.h"
+
 
 //Pins
 #define DATA_PIN 15
@@ -35,6 +38,7 @@ enum MotorState {
 };
 volatile MotorState mostCur;
 
+
 // Pew Pew Globals
 void PewPewControl(void * param);
 const int freqBuzz0r = 2000;
@@ -54,12 +58,43 @@ volatile uint32_t usLastShortPress=0;
 volatile uint32_t usLastLongPress=0;
 volatile int initialState = 0;
 
+//Webserver globals
+const char* ssid = "ESP32-Access-Point";
+const char* password = "123456789";
+AsyncWebServer server(80);
+
 // Task handles
 TaskHandle_t taskButtonPull;
 TaskHandle_t taskMotorControl;
 TaskHandle_t taskPewPew;
 TaskHandle_t taskBlingBling;
+TaskHandle_t taskWiwiFifi;
 
+//global functions
+const char* MotorStateToString(MotorState m){
+  switch(m){
+    case MOTOR_OFF:
+      return "MOTOR OFF";
+    case MOTOR_STARTING:
+      return "MOTOR STARTING";
+    case MOTOR_SPINNING:
+      return "MOTOR SPINNING";
+    case MOTOR_FREEFLY:
+      return "MOTOR FREEFLY";   
+  }
+  return "NONE";
+}
+const char* GunStateToString(GunState g){
+  switch(g){
+    case PARTY_MODE:
+      return "PARTY MODE";
+    case DEATH_MODE:
+      return "DEATH MODE";
+    case SNEAK_MODE:
+      return "SNEAK MODE";
+  }
+  return "NONE";
+}
 
 void setup() { 
   bool isPWMMotorOK=false;
@@ -88,7 +123,16 @@ void setup() {
   ledcAttachPin(BUZZ0R_PIN, pwmChanBuzz0r);
   Serial.printf("PWM Buzz0r: %d", isPWMBuzz0rOK);
 
-  //digitalWrite(IROUT_PIN, HIGH);
+  //setup wifi
+  WiFi.mode(WIFI_AP);
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.softAP(ssid, password);
+
+
+  Serial.print("AP IP address: ");
+
+  Serial.println(WiFi.softAPIP());
 
    xTaskCreatePinnedToCore(
                     ButtonControl,   /* Task function. */
@@ -125,18 +169,28 @@ void setup() {
                     1,           /* priority of the task */
                     &taskBlingBling,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */ 
+  delay(250);
+  xTaskCreatePinnedToCore(
+                    WiwiFifiControl,   /* Task function. */
+                    "WiwiFifiControl",     /* name of task. */
+                    10000,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &taskWiwiFifi,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */ 
+
 }
 
 void loop() {
   //Serial.write(48+digitalRead(IRIN_PIN));
-  
+  /*
   if(initialState == 0 && mostCur == MOTOR_OFF){
     RGBRandomMode();
   }
   else if(mostCur == MOTOR_SPINNING){
     initialState = 0; //go back to init after motor off
   }
- 
+ */
 
   delay(50);
 }

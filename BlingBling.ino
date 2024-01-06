@@ -13,7 +13,6 @@ volatile uint32_t usLastRGBRun=0;
 // PARTY MODE
 void RGBRandomMode(){
   for(int i=0;i<NUM_LEDS-1;i++) {
-    Serial.write("BLING BLING RGB"); 
     leds[i+1]=leds[i];
     if(leds[0]==leds[NUM_LEDS-1]) {
       FastLED.show();
@@ -118,17 +117,8 @@ void BlingBlingControl(void * param){
         }
       }
       else { // in case motor is on
-        switch ( BlingCur )
-        {
-        case DEATH_MODE:
-          SolidRedMode();
-          break;
-        case SNEAK_MODE:
-          Darkmode();
-          break;
-        default:
-          break;
-        }
+      if(BlingCur == DEATH_MODE){
+        SolidRedMode();
       }
     }
     usLastRGBRun=usLastShortPress;
