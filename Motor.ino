@@ -29,8 +29,8 @@ void MotorControl(void * param) {
           dutyCur+=1;
         } else {
           mostCur=MOTOR_SPINNING;
-          PewCur=DEATH_MODE;
-          BlingCur=DEATH_MODE;
+          gunCur=DEATH_MODE;
+          gunCur=DEATH_MODE;
           digitalWrite(ESPLED_PIN, true);
           ledcWrite(pwmChanMotor, 255);
         }
@@ -38,8 +38,8 @@ void MotorControl(void * param) {
       case MOTOR_SPINNING:
         if(uLastRun<usLastLongPress) {
           mostCur=MOTOR_FREEFLY;
-          PewCur=PARTY_MODE;
-          BlingCur=PARTY_MODE;
+          gunCur=PARTY_MODE;
+          gunCur=PARTY_MODE;
           dutyCur=0;
           Serial.write("Stoping motor");
           digitalWrite(ESPLED_PIN, false);

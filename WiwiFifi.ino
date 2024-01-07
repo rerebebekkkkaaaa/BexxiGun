@@ -9,57 +9,60 @@ String processor(const String& var){
   if(var == "MOTORSTATE"){
     return String(MotorStateToString(mostCur));
   }
-  else if(var == "BUZZ0RSTATE"){
-    return String(GunStateToString(PewCur));
-  }
-  else if(var == "BLINGSTATE"){
-    return String(GunStateToString(BlingCur));
+  else if(var == "GUNSTATE"){
+    return String(gunCur);
   }
 }
 
 
 void WiwiFifiControl(void * param){
 
-
-
+  //setup response of main page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
   Serial.print("serve mainpage");
   request->send_P(200, "text/html", index_html, processor);
   });
 
-  //setup responses to request for Buzz0r
-  server.on("/Buzz0r/PARTY_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    PewCur=PARTY_MODE;
-    Serial.print("Buzz0r Party");
+  //setup responses to request for Gunmode
+  server.on("/PARTY_MODE", HTTP_POST, [](AsyncWebServerRequest *request){
+    gunCur=PARTY_MODE;
+    usLastWifiControl = millis();
+    Serial.print("Party");
     request->send_P(200, "text/html", index_html, processor);
   });
-  server.on("/Buzz0r/DEATH_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    PewCur=DEATH_MODE;
-    Serial.print("Buzz0r Death");
+    server.on("/DEATH_MODE", HTTP_POST, [](AsyncWebServerRequest *request){
+    gunCur=DEATH_MODE;
+    usLastWifiControl = millis();
+    Serial.print("Death");
     request->send_P(200, "text/html", index_html, processor);
   });
-  server.on("/Buzz0r/SNEAK_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    PewCur=SNEAK_MODE;
-    Serial.print("Buzz0r Sneak");
+  server.on("/SNEAK_MODE", HTTP_POST, [](AsyncWebServerRequest *request){
+    gunCur=SNEAK_MODE;
+    usLastWifiControl = millis();
+    Serial.print("Sneak");
     request->send_P(200, "text/html", index_html, processor);
   });
 
-  //setup responses to request for Bling
-  server.on("/Bling/PARTY_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    BlingCur=PARTY_MODE;
-    Serial.print("Bling Party");
-    request->send_P(200, "text/html", index_html, processor);
+  //setup response to select a color
+  server.on("/COLOR", HTTP_POST, [](AsyncWebServerRequest *request){
+    gunCur=PARTY_MODE;
+    usLastWifiControl = millis();
+
+  //Get Color params from request
+    if(request->hasParam("color")){
+      AsyncWebParameter* color = request->getParam("color");
+      Serial.print(color->value());
+      Serial.println("--> color");
+      int colorvalue =(int)color;
+      if(colorvalue <=255 && colorvalue>=0){
+        SolidColorMode(CHSV(colorvalue, 255, 255));
+      }
+    }
+  Serial.print("Bling Party");
+  request->send_P(200, "text/html", index_html, processor);
   });
-  server.on("/Bling/DEATH_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    BlingCur=DEATH_MODE;
-    Serial.print("Bling Death");
-    request->send_P(200, "text/html", index_html, processor);
-  });
-  server.on("/Bling/SNEAK_MODE", HTTP_GET, [](AsyncWebServerRequest *request){
-    BlingCur=SNEAK_MODE;
-    Serial.print("Bling Sneak");
-    request->send_P(200, "text/html", index_html, processor);
-  });
+
+
 
   //add OTA update
   AsyncElegantOTA.begin(&server);
@@ -68,6 +71,6 @@ void WiwiFifiControl(void * param){
 
    for(;;){
     delay(1000);
-    Serial.print("server listening....");
+    Serial.println("server listening....");
   }
 }

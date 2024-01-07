@@ -20,3 +20,7 @@ FastLed
 https://github.com/me-no-dev/ESPAsyncWebServer
 https://github.com/me-no-dev/AsyncTCP
 https://github.com/ayushsharma82/AsyncElegantOTA
+
+
+Partition Scheme (for OTA!!!!):
+Minimal SPIFFSS

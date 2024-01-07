@@ -78,6 +78,12 @@ void SolidRedMode(){
 	fill_solid (leds, NUM_LEDS,  CRGB::Red);
   FastLED.show();
   delay(50);
+  fill_solid (leds, NUM_LEDS,  CRGB::Purple);
+  FastLED.show();
+  delay(50);
+  fill_solid (leds, NUM_LEDS,  CRGB::Red);
+  FastLED.show();
+  delay(50);
   Serial.write("BLING BLING red"); 
 }
 
@@ -93,35 +99,47 @@ void BlingBlingControl(void * param){
   for(;;){
     //change BlingBling with button
     if(usLastRGBRun<usLastShortPress){
-      initialState =1;
-      if(mostCur == MOTOR_OFF){ // in case motor is off
-        switch ( BlingCur )
-        {
-        case PARTY_MODE:
-          Serial.println("Party bling");
-          PartyBlingBlingButton();
-          BlingCur = DEATH_MODE;
-          break;
-        case DEATH_MODE:
-          Serial.println("death bling");
-          SolidRedMode();
-          BlingCur = SNEAK_MODE;
-          break;
-        case SNEAK_MODE:
-          Serial.println("sneak bling");
-          Darkmode();
-          BlingCur = PARTY_MODE;
-          break;
-        default:
-          break;
-        }
-      }
-      else { // in case motor is on
-      if(BlingCur == DEATH_MODE){
+      usLastRGBRun=usLastShortPress;
+      switch ( gunCur )
+      {
+      case PARTY_MODE:
+        Serial.println("Party bling");
+        PartyBlingBlingButton();
+        break;
+      case DEATH_MODE:
+        Serial.println("death bling");
         SolidRedMode();
+        break;
+      case SNEAK_MODE:
+        Serial.println("sneak bling");
+        Darkmode();
+        break;
+      default:
+        break;
       }
     }
-    usLastRGBRun=usLastShortPress;
+    else if(usLastRGBRun<usLastWifiControl){
+      usLastRGBRun=usLastWifiControl;
+      switch ( gunCur )
+      {
+      case PARTY_MODE:
+        Serial.println("Party bling");
+        PartyBlingBlingButton();
+        break;
+      case DEATH_MODE:
+        Serial.println("death bling");
+        SolidRedMode();
+        break;
+      case SNEAK_MODE:
+        Serial.println("sneak bling");
+        Darkmode();
+        break;
+      default:
+        break;
+      }
+    }
+    
+    
     delay(50);
   }
 }

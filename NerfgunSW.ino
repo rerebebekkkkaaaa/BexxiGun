@@ -24,6 +24,7 @@ enum GunState {
   DEATH_MODE = 1,
   SNEAK_MODE = 2
 };
+volatile GunState gunCur;
 
 // Motor Globals
 void MotorControl(void * param);
@@ -44,23 +45,22 @@ void PewPewControl(void * param);
 const int freqBuzz0r = 2000;
 const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
-volatile GunState PewCur;
+
 
 // Bling Bling Globals
 void BlingBlingControl(void * param);
 #define NUM_LEDS 7
 CRGB leds[NUM_LEDS];
-volatile GunState BlingCur;
 
 // Button Globals
 void ButtonControl(void  * param);
-volatile uint32_t usLastShortPress=0;
-volatile uint32_t usLastLongPress=0;
-volatile int initialState = 0;
+volatile uint32_t usLastShortPress = 0;
+volatile uint32_t usLastLongPress = 0;
 
 //Webserver globals
-const char* ssid = "ESP32-Access-Point";
+const char* ssid = "Bexxi-Gun";
 const char* password = "123456789";
+volatile uint32_t usLastWifiControl = 0;
 AsyncWebServer server(80);
 
 // Task handles
@@ -182,15 +182,6 @@ void setup() {
 }
 
 void loop() {
-  //Serial.write(48+digitalRead(IRIN_PIN));
-  /*
-  if(initialState == 0 && mostCur == MOTOR_OFF){
-    RGBRandomMode();
-  }
-  else if(mostCur == MOTOR_SPINNING){
-    initialState = 0; //go back to init after motor off
-  }
- */
 
   delay(50);
 }

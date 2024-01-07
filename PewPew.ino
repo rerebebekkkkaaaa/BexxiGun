@@ -54,30 +54,30 @@ void PewPewControl(void * param){
     if(usLastPewPewRun<usLastShortPress){
       Serial.write("PEW PEW PEW PEW");
       if(mostCur == MOTOR_OFF){
-        switch ( PewCur)
+        switch ( gunCur)
         {
         case PARTY_MODE:
           Serial.println("party pew");
           soundindex = random(PEWPEW_MAXINDEX); //select random sound from lib
           PewPewPlayer(pewpewSounds[soundindex],pewpewLength[soundindex]);
-          PewCur = DEATH_MODE;
+          gunCur = DEATH_MODE;
           break;
         case DEATH_MODE:
           Serial.println("death pew");
           PewPewPlayer(pewpewSounds[1],pewpewLength[1]);
-          PewCur = SNEAK_MODE;
+          gunCur = SNEAK_MODE;
           break;
         case SNEAK_MODE:
           Serial.println("sneak pew");
           //No sound in sneak mode
-          PewCur = PARTY_MODE;
+          gunCur = PARTY_MODE;
           break;
         default:
           break;
         }
       }
       else{
-        switch ( PewCur )
+        switch ( gunCur )
         {
         case DEATH_MODE:
           PewPewPlayer(pewpewSounds[1],pewpewLength[1]);
