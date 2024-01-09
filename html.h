@@ -6,11 +6,7 @@ const char index_html[]  = R"rawliteral(
       <title>BexxiGun</title>
       <meta http-equiv="refresh" content="10" />
       <script>
-        function changeButtonColor(){
-          let col=(((document.getElementById("hcolor").value)*360)>>8);
-          console.log("hsl("+col+"deg,100%%,50%%)");
-          document.getElementById("hcolorbutton").style.backgroundColor = "hsl("+col+"deg,100%%,50%%)";
-        }
+
       </script>
     </head>
     <body>
@@ -21,11 +17,18 @@ const char index_html[]  = R"rawliteral(
         <button onclick="SendDTH();" id="deathbutton" value="DEATH_MODE">DEATH MODE</button>
         <button onclick="SendSNEAK();" id="sneakbutton" value="SNEAK_MODE">SNEAK MODE</button>
       </div>
-      <div><button onclick="SendColor();" id="hcolorbutton" >COLOR1</button>  <input type="range" id="hcolor" min="0" max="255" onchange="changeButtonColor()" /></div>
+      <div><button onclick="SendColor();" id="hcolorbutton" >COLOR1</button>  <input type="range" id="hcolor" min="0" max="255" onchange="changeBG()" /></div>
     </body>
  <script>
    gunState = %GUNSTATE%
- 
+
+         function changeBG(){
+          let col=(((document.getElementById("hcolor").value)*360)>>8);
+          console.log("hsl("+col+"deg,100%%,50%%)");
+          let colhsv ="hsl("+col+"deg,100%%,50%%)";
+          //document.body.style.backgroundColor.style.backgroundColor = "hsl("+col+"deg,100%%,50%%)";
+          document.getElementById("hcolorbutton").style.backgroundColor = colhsv;
+        }
 
   function setUpGunstateSelect(){
     buttons = document.getElementById("gunstateSelect").children

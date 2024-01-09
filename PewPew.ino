@@ -60,17 +60,14 @@ void PewPewControl(void * param){
           Serial.println("party pew");
           soundindex = random(PEWPEW_MAXINDEX); //select random sound from lib
           PewPewPlayer(pewpewSounds[soundindex],pewpewLength[soundindex]);
-          gunCur = DEATH_MODE;
           break;
         case DEATH_MODE:
           Serial.println("death pew");
           PewPewPlayer(pewpewSounds[1],pewpewLength[1]);
-          gunCur = SNEAK_MODE;
           break;
         case SNEAK_MODE:
           Serial.println("sneak pew");
           //No sound in sneak mode
-          gunCur = PARTY_MODE;
           break;
         default:
           break;

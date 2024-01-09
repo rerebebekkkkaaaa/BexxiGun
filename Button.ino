@@ -16,6 +16,7 @@ void ButtonControl(void  * param) {
       isDown=true;
       uLastDown = uCurRun;
       Serial.println("button down");
+      digitalWrite(ESPLED_PIN, true);
     }
     if(digitalRead(BUTTON_PIN)==true and isDown == true) {
       if(uLastDown+SHORT_PRESS_TIME>uCurRun) {
@@ -23,6 +24,7 @@ void ButtonControl(void  * param) {
       }
       isDown=false;
       Serial.println("button short");
+      digitalWrite(ESPLED_PIN, false);
     }
     if(uLastDown+SHORT_PRESS_TIME<=uCurRun and isDown == true) {
       usLastLongPress=uCurRun;
@@ -31,6 +33,7 @@ void ButtonControl(void  * param) {
         delay(1); //wait until button is released
       }
       isDown=false;
+      digitalWrite(ESPLED_PIN, false);
     }
     delay(1);
   }

@@ -35,17 +35,22 @@ void Gradient3Mode(){
   delay(50);
   Serial.write("BLING BLING random 3 grad"); 
 }
-void SolidColorMode(CRGB color){
-	fill_solid (leds, NUM_LEDS,  color);
+void SolidColorMode(CHSV color){
+  CRGB crgbcol;
+  hsv2rgb_raw(color,crgbcol);
+	fill_solid (leds, NUM_LEDS,  crgbcol);
+  Serial.write("BLING BLING color"); 
+  if (gunCur == SNEAK_MODE){
+    fadeToBlackBy(leds,NUM_LEDS,254);
+  }
   FastLED.show();
   delay(50);
-  Serial.write("BLING BLING color"); 
 }
 void RainbowMode(){
   	fill_rainbow_circular(leds,NUM_LEDS,0,255);
     FastLED.show();
     delay(50);
-     Serial.write("BLING BLING Rainbow"); 
+    Serial.write("BLING BLING Rainbow"); 
 }
 
 
@@ -118,7 +123,7 @@ void BlingBlingControl(void * param){
         break;
       }
     }
-    else if(usLastRGBRun<usLastWifiControl){
+    else if(usLastRGBRun<usLastWifiControl && colorsetup == -1){
       usLastRGBRun=usLastWifiControl;
       switch ( gunCur )
       {
@@ -138,8 +143,12 @@ void BlingBlingControl(void * param){
         break;
       }
     }
-    
-    
+    else if (usLastRGBRun<usLastWifiControl && colorsetup != -1){
+      usLastRGBRun=usLastWifiControl;
+      Serial.println("color");
+      SolidColorMode(CHSV(colorsetup, 255, 255));
+      colorsetup=-1;
+    }
     delay(50);
   }
 }

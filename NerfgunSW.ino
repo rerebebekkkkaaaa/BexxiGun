@@ -18,6 +18,7 @@ Main Control File & Pins
 #define ESPLED_PIN 4
 #define IROUT_PIN 12
 #define IRIN_PIN 13
+#define RED_LED 33
 
 enum GunState {
   PARTY_MODE = 0,
@@ -59,8 +60,9 @@ volatile uint32_t usLastLongPress = 0;
 
 //Webserver globals
 const char* ssid = "Bexxi-Gun";
-const char* password = "123456789";
+const char* password = "ppaasswwoorrtt";
 volatile uint32_t usLastWifiControl = 0;
+volatile int colorsetup=-1;
 AsyncWebServer server(80);
 
 // Task handles
@@ -109,6 +111,8 @@ void setup() {
   pinMode(IROUT_PIN, OUTPUT);
   pinMode(IRIN_PIN,INPUT);
   pinMode(BUZZ0R_PIN,OUTPUT);
+   pinMode(RED_LED,OUTPUT);
+      pinMode(DATA_PIN,OUTPUT);
 
   //set up the rgb
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
@@ -178,11 +182,13 @@ void setup() {
                     1,           /* priority of the task */
                     &taskWiwiFifi,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */ 
+  delay(250);
 
 }
 
 void loop() {
-
-  delay(50);
+  digitalWrite(RED_LED, false);
+  delay(5000);
+  digitalWrite(RED_LED, true);
 }
 

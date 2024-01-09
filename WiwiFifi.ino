@@ -45,21 +45,17 @@ void WiwiFifiControl(void * param){
 
   //setup response to select a color
   server.on("/COLOR", HTTP_POST, [](AsyncWebServerRequest *request){
-    gunCur=PARTY_MODE;
-    usLastWifiControl = millis();
-
-  //Get Color params from request
+  usLastWifiControl = millis();
+    //Get Color params from request
     if(request->hasParam("color")){
       AsyncWebParameter* color = request->getParam("color");
       Serial.print(color->value());
+      const char * cols=(color->value()).c_str();
       Serial.println("--> color");
-      int colorvalue =(int)color;
-      if(colorvalue <=255 && colorvalue>=0){
-        SolidColorMode(CHSV(colorvalue, 255, 255));
-      }
+      colorsetup =atoi(cols);
     }
-  Serial.print("Bling Party");
-  request->send_P(200, "text/html", index_html, processor);
+    Serial.print("Bling Party");
+    request->send_P(200, "text/html", index_html, processor);
   });
 
 
@@ -70,7 +66,7 @@ void WiwiFifiControl(void * param){
   server.begin();
 
    for(;;){
-    delay(1000);
+    delay(10000);
     Serial.println("server listening....");
   }
 }
