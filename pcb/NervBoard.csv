@@ -1,0 +1,24 @@
+Ref,Qnty,MPN,Value,Description
+"C1, C2, C3, C4",4,T491U106K020AT,10uF,Unpolarized capacitor
+D1,1,TSAL6200,TSAL6200,"950nm IR-LED, 5mm"
+D2,1,1N4004-B,1N4004,"400V 1A General Purpose Rectifier Diode, DO-41"
+Flash0,1,TS02-66-43-BK-160-SCR-D,,"Push button switch, generic, two pins"
+"J1, J2",2,SL-108-TT-11,,"Generic connector, single row, 01x08, script generated"
+J_Buzzor_0,1,BG302-03-A-L-G,,"Generic connector, single row, 01x03, script generated"
+J_Prog0,1,BG302-05-A-L-G,,"Generic connector, single row, 01x05, script generated"
+LightBarrier0,1,BG302-06-A-L-G,,"Generic connector, single row, 01x05, script generated"
+"Q0, Q2",2,2N7000TA ,2N7000,"0.2A Id, 200V Vds, N-Channel MOSFET, 2.6V Logic Level, TO-92"
+Q3,1,AO3400A,AO3400A,"30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23"
+R_Down_But0,1,RT0805FRE0710KL,10k,Resistor
+R_Down_LED0,1,RT0805FRE0720RL,20,Resistor
+R_Down_Motor1,1,RT0805FRE0710KL,10k,Resistor
+R_Filter_Motor0,1,RT0805FRE07220RL,220,Resistor
+R_IRIn_0,1,RT0805FRE072K2L,2k2,Resistor
+R_IROut_0,1,RT0805FRE07200RL,200,Resistor
+"R_Lvl_30, R_Lvl_31, R_Lvl_50, R_Lvl_51",4,RT0805FRE0710KL,10k,Resistor
+R_Up_LED0,1,RT0805FRE0720RL,20,Resistor
+Rainbow0,1,BG302-03-A-L-G,,"Generic connector, single row, 01x03, script generated"
+Reset0,1,TS02-66-43-BK-160-SCR-D,,"Push button switch, generic, two pins"
+U1,1,ESP32-CAM,ESP32-CAM,
+U2,1,LM1085IT-5.0/NOPB,LM1085-5.0,"3A 25V Linear Regulator, Fixed Output 5.0V, TO-220/TO-263"
+U3,1,TSSP4038 ,TSSP4038,IR Receiver Modules for Remote Control Systems
