@@ -8,6 +8,7 @@ Main Control File & Pins
 #include <AsyncElegantOTA.h>
 #include "ESPAsyncWebServer.h"
 #include "pitches.h"
+#include "Wificredentials.h"
 
 
 //Pins
@@ -59,8 +60,6 @@ volatile uint32_t usLastShortPress = 0;
 volatile uint32_t usLastLongPress = 0;
 
 //Webserver globals
-const char* ssid = "Bexxi-Gun";
-const char* password = "ppaasswwoorrtt";
 volatile uint32_t usLastWifiControl = 0;
 volatile int colorsetup=-1;
 AsyncWebServer server(80);
@@ -130,8 +129,21 @@ void setup() {
   //setup wifi
   WiFi.mode(WIFI_AP);
   Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.softAP(ssid, password);
+   pinMode(RED_LED,OUTPUT);
+      pinMode(DATA_PIN,OUTPUT);
+
+  //set up the rgb
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
+
+  //set up the motor 
+  isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
+  ledcAttachPin(FLY_PIN, pwmChanMotor);
+  Serial.printf("PWM Motor: %d", isPWMMotorOK);
+
+  //set up the nerv buzz0r
+  isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
+  Serial.println(SSID);
+  WiFi.softAP(SSID, PASSWORD);
 
 
   Serial.print("AP IP address: ");
@@ -187,8 +199,12 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(RED_LED, false);
+  digitalWrite(RED_LED, HIGH);
+  digitalWrite(IROUT_PIN, HIGH);
   delay(5000);
-  digitalWrite(RED_LED, true);
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(IROUT_PIN, LOW);
+  delay(5000);
+
 }
 
