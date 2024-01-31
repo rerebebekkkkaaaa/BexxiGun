@@ -48,6 +48,12 @@ const int freqBuzz0r = 2000;
 const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
 
+//LightBarrier Globals
+const int freqBarrier = 38000;
+const int pwmChanBarrier = 6;
+const int resBarrier = 8;
+volatile bool wasLightBarrierTriggered=false;
+
 
 // Bling Bling Globals
 void BlingBlingControl(void * param);
@@ -70,6 +76,11 @@ TaskHandle_t taskMotorControl;
 TaskHandle_t taskPewPew;
 TaskHandle_t taskBlingBling;
 TaskHandle_t taskWiwiFifi;
+
+//global interrupt handlers
+void ARDUINO_ISR_ATTR isrLightBarrier() {
+    wasLightBarrierTriggered=true;
+}
 
 //global functions
 const char* MotorStateToString(MotorState m){
@@ -100,6 +111,7 @@ const char* GunStateToString(GunState g){
 void setup() { 
   bool isPWMMotorOK=false;
   bool isPWMBuzz0rOK=false;
+  bool isPWMBarrierOK=false;
 
   Serial.begin(115200);
   delay(250); //Let serial settle a bit
@@ -109,9 +121,13 @@ void setup() {
   pinMode(BUTTON_PIN,INPUT);
   pinMode(IROUT_PIN, OUTPUT);
   pinMode(IRIN_PIN,INPUT);
+  
   pinMode(BUZZ0R_PIN,OUTPUT);
-   pinMode(RED_LED,OUTPUT);
-      pinMode(DATA_PIN,OUTPUT);
+  pinMode(RED_LED,OUTPUT);
+  pinMode(DATA_PIN,OUTPUT);
+
+  //Ready the light barrier input
+  attachInterrupt(IRIN_PIN, isrLightBarrier, FALLING);
 
   //set up the rgb
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
@@ -119,18 +135,22 @@ void setup() {
   //set up the motor 
   isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
   ledcAttachPin(FLY_PIN, pwmChanMotor);
-  Serial.printf("PWM Motor: %d", isPWMMotorOK);
+  Serial.printf("PWM Motor: %d\n", isPWMMotorOK);
 
   //set up the nerv buzz0r
   isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
   ledcAttachPin(BUZZ0R_PIN, pwmChanBuzz0r);
-  Serial.printf("PWM Buzz0r: %d", isPWMBuzz0rOK);
+  Serial.printf("PWM Buzz0r: %d\n", isPWMBuzz0rOK);
 
-  //setup wifi
-  WiFi.mode(WIFI_AP);
-  Serial.print("Connecting to ");
-   pinMode(RED_LED,OUTPUT);
-      pinMode(DATA_PIN,OUTPUT);
+  //set up the  Lightbarrier PWM LED
+  isPWMBarrierOK=ledcSetup(pwmChanBarrier, freqBarrier, resBarrier);
+  ledcAttachPin(IROUT_PIN, pwmChanBarrier);
+  ledcWrite(pwmChanBarrier, 128);
+  Serial.printf("PWM Lightbarrier: %d\n", isPWMBarrierOK);
+
+  
+  pinMode(RED_LED,OUTPUT);
+  pinMode(DATA_PIN,OUTPUT);
 
   //set up the rgb
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
@@ -138,10 +158,14 @@ void setup() {
   //set up the motor 
   isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
   ledcAttachPin(FLY_PIN, pwmChanMotor);
-  Serial.printf("PWM Motor: %d", isPWMMotorOK);
+  Serial.printf("PWM Motor: %d\n", isPWMMotorOK);
 
   //set up the nerv buzz0r
   isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
+
+  //setup wifi
+  WiFi.mode(WIFI_AP);
+  Serial.print("Connecting to");
   Serial.println(SSID);
   WiFi.softAP(SSID, PASSWORD);
 
@@ -200,10 +224,8 @@ void setup() {
 
 void loop() {
   digitalWrite(RED_LED, HIGH);
-  digitalWrite(IROUT_PIN, HIGH);
   delay(5000);
   digitalWrite(RED_LED, LOW);
-  digitalWrite(IROUT_PIN, LOW);
   delay(5000);
 
 }

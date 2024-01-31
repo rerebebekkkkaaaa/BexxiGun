@@ -51,6 +51,13 @@ void PewPewControl(void * param){
   int soundindex;
   PewPewPlayer(pewpewSounds[0],pewpewLength[0]);
   for(;;){
+    if(wasLightBarrierTriggered) {
+      wasLightBarrierTriggered=false;
+      Serial.println("Detected bolt passthru");
+      //Fake a button trigger since last run:
+      usLastShortPress=usLastPewPewRun+1;
+      //ToDo: Calculate bolt speed. ;) Not sure if the HW setup is fast enough, but ... find out. :-P
+    }
     if(usLastPewPewRun<usLastShortPress){
       Serial.write("PEW PEW PEW PEW");
       if(mostCur == MOTOR_OFF){
