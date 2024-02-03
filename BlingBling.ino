@@ -79,7 +79,7 @@ void PartyBlingBlingButton()
 }
 
 // DEATH MODE
-void SolidRedMode(){
+void DartPassThroughMode(){
 	fill_solid (leds, NUM_LEDS,  CRGB::Red);
   FastLED.show();
   delay(50);
@@ -102,8 +102,7 @@ void Darkmode(){
 void BlingBlingControl(void * param){
   RGBRandomMode();
   for(;;){
-    //change BlingBling with button
-    if(usLastRGBRun<usLastShortPress){
+    if(usLastRGBRun<usLastShortPress){    //change BlingBling with button
       usLastRGBRun=usLastShortPress;
       switch ( gunCur )
       {
@@ -113,7 +112,7 @@ void BlingBlingControl(void * param){
         break;
       case DEATH_MODE:
         Serial.println("death bling");
-        SolidRedMode();
+        DartPassThroughMode();
         break;
       case SNEAK_MODE:
         Serial.println("sneak bling");
@@ -123,7 +122,7 @@ void BlingBlingControl(void * param){
         break;
       }
     }
-    else if(usLastRGBRun<usLastWifiControl && colorsetup == -1){
+    else if(usLastRGBRun<usLastWifiControl && colorsetup == -1){    //change BlingBling with Webpage
       usLastRGBRun=usLastWifiControl;
       switch ( gunCur )
       {
@@ -133,7 +132,7 @@ void BlingBlingControl(void * param){
         break;
       case DEATH_MODE:
         Serial.println("death bling");
-        SolidRedMode();
+        DartPassThroughMode();
         break;
       case SNEAK_MODE:
         Serial.println("sneak bling");
@@ -143,12 +142,22 @@ void BlingBlingControl(void * param){
         break;
       }
     }
-    else if (usLastRGBRun<usLastWifiControl && colorsetup != -1){
+    else if (usLastRGBRun<usLastWifiControl && colorsetup != -1){    //change color with Webpage
       usLastRGBRun=usLastWifiControl;
       Serial.println("color");
       SolidColorMode(CHSV(colorsetup, 255, 255));
       colorsetup=-1;
     }
+    else if (LightBarrierBlingBling){   //bling bling when light barrier was triggered
+      DartPassThroughMode();
+      if(gunCur == SNEAK_MODE){
+        Darkmode();
+      }
+      DartSpeed(starttime,endtime);
+      Serial.printf("speed:%lf m/s\n",dartspeed);
+      LightBarrierBlingBling=false;
+    }
+
     delay(50);
   }
 }

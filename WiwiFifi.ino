@@ -58,6 +58,14 @@ void WiwiFifiControl(void * param){
     request->send_P(200, "text/html", index_html, processor);
   });
 
+   //setup response for Dart Speed
+  server.on("/DARTSPEED", HTTP_GET, [](AsyncWebServerRequest *request){
+    Serial.print("send dartspeed");
+    char output[50];
+    DartSpeed(starttime,endtime);
+    snprintf(output, 50, "%lf m/s", dartspeed);
+    request->send_P(200, "text/plain", output);
+  });
 
 
   //add OTA update

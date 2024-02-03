@@ -4,14 +4,11 @@ const char index_html[]  = R"rawliteral(
   <html>
     <head>
       <title>BexxiGun</title>
-      <meta http-equiv="refresh" content="10" />
-      <script>
-
-      </script>
     </head>
     <body>
       <h1>BexxiGun 0.1 Webinterface 1</h1>
       <p>MOTOR STATE: <strong> %MOTORSTATE%</strong></p>
+      <p><div id="dartSpeed"></div> </p>
       <div id="gunstateSelect">
         <button onclick="SendPARTY();" id="partybutton" value="PARTY_MODE">PARTY MODE</button>
         <button onclick="SendDTH();" id="deathbutton" value="DEATH_MODE">DEATH MODE</button>
@@ -20,15 +17,15 @@ const char index_html[]  = R"rawliteral(
       <div><button onclick="SendColor();" id="hcolorbutton" >COLOR1</button>  <input type="range" id="hcolor" min="0" max="255" onchange="changeBG()" /></div>
     </body>
  <script>
-   gunState = %GUNSTATE%
+  gunState = %GUNSTATE%
 
-         function changeBG(){
-          let col=(((document.getElementById("hcolor").value)*360)>>8);
-          console.log("hsl("+col+"deg,100%%,50%%)");
-          let colhsv ="hsl("+col+"deg,100%%,50%%)";
-          //document.body.style.backgroundColor.style.backgroundColor = "hsl("+col+"deg,100%%,50%%)";
-          document.getElementById("hcolorbutton").style.backgroundColor = colhsv;
-        }
+  function changeBG(){
+      let col=(((document.getElementById("hcolor").value)*360)>>8);
+      console.log("hsl("+col+"deg,100%%,50%%)");
+      let colhsv ="hsl("+col+"deg,100%%,50%%)";
+      //document.body.style.backgroundColor.style.backgroundColor = "hsl("+col+"deg,100%%,50%%)";
+      document.getElementById("hcolorbutton").style.backgroundColor = colhsv;
+  }
 
   function setUpGunstateSelect(){
     buttons = document.getElementById("gunstateSelect").children
@@ -104,6 +101,21 @@ const char index_html[]  = R"rawliteral(
     xhr.send();
     console.log("SEND COLOR222");
   }
+
+  setInterval(function GetDartSpeed(){
+    console.log("GET DART SPEED");
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        document.getElementById("dartSpeed").innerHTML = xhr.responseText;
+      }
+    };
+    xhr.open("GET", window.location.href+"DARTSPEED");
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send();
+    console.log("SEND GET DART SPEED");
+
+  },10000);
 
  setUpGunstateSelect();
   </script>
