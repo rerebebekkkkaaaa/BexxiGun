@@ -3,6 +3,7 @@ BexxiGun 0.1 (Un)locked SW
 WiwiFifi Control File
 */
 #include "html.h"
+#include <ArduinoJson.h>
 
 String processor(const String& var){
   Serial.println(var);
@@ -58,12 +59,27 @@ void WiwiFifiControl(void * param){
     request->send_P(200, "text/html", index_html, processor);
   });
 
-   //setup response for Dart Speed
-  server.on("/DARTSPEED", HTTP_GET, [](AsyncWebServerRequest *request){
-    Serial.print("send dartspeed");
-    char output[50];
+   //setup response for Gun State
+  server.on("/GUNDATA", HTTP_GET, [](AsyncWebServerRequest *request){
+    Serial.print("send motorstate");
+    StaticJsonDocument<256> jsondoc;
+    char output[256];
     DartSpeed(starttime,endtime);
     snprintf(output, 50, "%lf m/s", dartspeed);
+    jsondoc["dartspeed"] = output;
+
+    snprintf(output, 50, "%lf m/s", maxdartspeed);
+    jsondoc["maxdartspeed"]=output;
+
+    snprintf(output, 50, "%lf m/s", mindartspeed);
+    jsondoc["mindartspeed"]=output;
+
+    jsondoc["gunstate"] = gunCur;
+
+    jsondoc["motorstate"]=MotorStateToString(mostCur);
+
+    serializeJson(jsondoc,output);
+
     request->send_P(200, "text/plain", output);
   });
 
@@ -75,6 +91,6 @@ void WiwiFifiControl(void * param){
 
    for(;;){
     delay(10000);
-    Serial.println("server listening....");
+    //Serial.println("server listening....");
   }
 }

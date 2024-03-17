@@ -87,8 +87,10 @@ void PewPewControl(void * param){
       
     }
     else if(LightBarrierPewPew){    //pew pew when light barrier was triggered
-      Serial.println("death pew");
-      PewPewPlayer(pewpewSounds[1],pewpewLength[1]);
+      Serial.println("LB pew");
+      if(gunCur != SNEAK_MODE){
+        PewPewPlayer(pewpewSounds[1],pewpewLength[1]);
+      }
       LightBarrierPewPew=false;
     }
     usLastPewPewRun=usLastShortPress;

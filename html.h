@@ -7,8 +7,10 @@ const char index_html[]  = R"rawliteral(
     </head>
     <body>
       <h1>BexxiGun 0.1 Webinterface 1</h1>
-      <p>MOTOR STATE: <strong> %MOTORSTATE%</strong></p>
-      <p><div id="dartSpeed"></div> </p>
+      <p><strong><div id="motorState"></div></strong></p>
+      <p>last dart speed: <div id="dartSpeed"></div> </p>
+      <p>max dart speed: <div id="maxdartSpeed"></div> </p>
+      <p>min dart speed: <div id="mindartSpeed"></div> </p>
       <div id="gunstateSelect">
         <button onclick="SendPARTY();" id="partybutton" value="PARTY_MODE">PARTY MODE</button>
         <button onclick="SendDTH();" id="deathbutton" value="DEATH_MODE">DEATH MODE</button>
@@ -17,7 +19,6 @@ const char index_html[]  = R"rawliteral(
       <div><button onclick="SendColor();" id="hcolorbutton" >COLOR1</button>  <input type="range" id="hcolor" min="0" max="255" onchange="changeBG()" /></div>
     </body>
  <script>
-  gunState = %GUNSTATE%
 
   function changeBG(){
       let col=(((document.getElementById("hcolor").value)*360)>>8);
@@ -27,11 +28,14 @@ const char index_html[]  = R"rawliteral(
       document.getElementById("hcolorbutton").style.backgroundColor = colhsv;
   }
 
-  function setUpGunstateSelect(){
+  function setUpGunstateSelect(gunState){
     buttons = document.getElementById("gunstateSelect").children
     for (let i = 0; i < buttons.length; i++) {
       if(i == gunState){
         buttons[i].style.backgroundColor ="blue";
+      }
+      else{
+        buttons[i].style.backgroundColor ="white";
       }
     } 
   } 
@@ -102,20 +106,25 @@ const char index_html[]  = R"rawliteral(
     console.log("SEND COLOR222");
   }
 
-  setInterval(function GetDartSpeed(){
-    console.log("GET DART SPEED");
+  setInterval(function GetGunState(){
+    console.log("GET GUN STATE");
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4 && xhr.status === 200) {
-        document.getElementById("dartSpeed").innerHTML = xhr.responseText;
+        var json = JSON.parse(xhr.responseText);
+        setUpGunstateSelect(json.gunstate);
+        document.getElementById("dartSpeed").innerHTML = json.dartspeed;
+        document.getElementById("maxdartSpeed").innerHTML = json.maxdartspeed;
+        document.getElementById("mindartSpeed").innerHTML = json.mindartspeed;
+        document.getElementById("motorState").innerHTML = json.motorstate;
       }
     };
-    xhr.open("GET", window.location.href+"DARTSPEED");
+    xhr.open("GET", window.location.href+"GUNDATA");
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhr.send();
     console.log("SEND GET DART SPEED");
 
-  },10000);
+  },3000);
 
  setUpGunstateSelect();
   </script>

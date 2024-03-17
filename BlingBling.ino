@@ -89,7 +89,7 @@ void DartPassThroughMode(){
   fill_solid (leds, NUM_LEDS,  CRGB::Red);
   FastLED.show();
   delay(50);
-  Serial.write("BLING BLING red"); 
+  //Serial.write("BLING BLING red"); 
 }
 
 // SNEAK MODE
@@ -149,12 +149,13 @@ void BlingBlingControl(void * param){
       colorsetup=-1;
     }
     else if (LightBarrierBlingBling){   //bling bling when light barrier was triggered
+      Serial.println("LB bling");
       DartPassThroughMode();
       if(gunCur == SNEAK_MODE){
         Darkmode();
       }
-      DartSpeed(starttime,endtime);
-      Serial.printf("speed:%lf m/s\n",dartspeed);
+      //DartSpeed(starttime,endtime);
+      //Serial.printf("speed:%lf m/s\n",dartspeed);
       LightBarrierBlingBling=false;
     }
 

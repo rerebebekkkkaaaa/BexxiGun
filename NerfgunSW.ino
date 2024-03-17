@@ -58,8 +58,9 @@ volatile bool LightBarrierPewPew=false;
 volatile int starttime =0;
 volatile int endtime=0;
 volatile double dartspeed=0.0;
-#define DARTLENGTH 68000 //mikrometer
-#define DIV 1
+volatile double maxdartspeed=0.0;
+volatile double mindartspeed=0.0;
+#define SPEEDDIVISOR 22.22 //calculated using scientific methods
 
 
 // Bling Bling Globals
@@ -87,15 +88,16 @@ TaskHandle_t taskWiwiFifi;
 //global interrupt handlers
 void ARDUINO_ISR_ATTR isrLightBarrier() {
 
+  LightBarrierBlingBling=true;
+  LightBarrierPewPew=true;
   //BOLT START
-  if(wasLightBarrierTriggered == digitalRead(IRIN_PIN)){
+  if(!wasLightBarrierTriggered){
     starttime=micros();
     wasLightBarrierTriggered=true;
-    LightBarrierBlingBling=true;
-    LightBarrierPewPew=true;
+
   }
   //BOLT END
-  else{
+  else {
     endtime=micros();
     wasLightBarrierTriggered=false;
   }
@@ -127,18 +129,20 @@ const char* GunStateToString(GunState g){
   return "NONE";
 }
 void DartSpeed(int start, int end){
+  Serial.printf("%i",wasLightBarrierTriggered);
   if(!wasLightBarrierTriggered){
+    Serial.printf("start:%d",start);
+    Serial.printf("end:%d",end);
     if(end > start){
-      //Serial.printf("start:%d",start);
-      //Serial.printf("end:%d",end);
-      //Serial.printf("time:%d",end-start);
-      dartspeed= (DARTLENGTH/(end-start))/DIV;
-    }
-    else if(end < start){
-      //Serial.printf("start:%d",start);
-      //Serial.printf("end:%d",end);
-      //Serial.printf("time:%d",start-end);
-      dartspeed= (DARTLENGTH/(start-end))/DIV;
+
+      Serial.printf("time:%d",end-start);
+      dartspeed= (end-start)/ SPEEDDIVISOR;
+      if(dartspeed > maxdartspeed){
+        maxdartspeed = dartspeed;
+      }
+      else if(dartspeed < mindartspeed || mindartspeed == 0.0){
+        mindartspeed = dartspeed;
+      }
     }
   }
 }
@@ -162,9 +166,6 @@ void setup() {
   pinMode(DATA_PIN,OUTPUT);
 
 
-
-  //set up the rgb
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
 
   //set up the motor 
   isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
@@ -190,9 +191,6 @@ void setup() {
   ledcAttachPin(FLY_PIN, pwmChanMotor);
   Serial.printf("PWM Motor: %d\n", isPWMMotorOK);
 
-  //set up the nerv buzz0r
-  isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
-
   //setup wifi
   WiFi.mode(WIFI_AP);
   Serial.print("Connecting to");
@@ -204,6 +202,7 @@ void setup() {
 
   Serial.println(WiFi.softAPIP());
 
+  delay(250);
    xTaskCreatePinnedToCore(
                     ButtonControl,   /* Task function. */
                     "ButtonPuller",     /* name of task. */
@@ -212,7 +211,6 @@ void setup() {
                     1,           /* priority of the task */
                     &taskButtonPull,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */
-   delay(250);
    xTaskCreatePinnedToCore(
                     MotorControl,   /* Task function. */
                     "MotorControl",     /* name of task. */
@@ -221,7 +219,6 @@ void setup() {
                     1,           /* priority of the task */
                     &taskMotorControl,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 0 */
-  delay(250);
   xTaskCreatePinnedToCore(
                     PewPewControl,   /* Task function. */
                     "PewPewControl",     /* name of task. */
@@ -229,8 +226,7 @@ void setup() {
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
                     &taskPewPew,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
-  delay(250);
+                    0);          /* pin task to core 1 */
   xTaskCreatePinnedToCore(
                     BlingBlingControl,   /* Task function. */
                     "BlingBlingControl",     /* name of task. */
@@ -239,7 +235,6 @@ void setup() {
                     1,           /* priority of the task */
                     &taskBlingBling,      /* Task handle to keep track of created task */
                     1);          /* pin task to core 1 */
-  delay(250);
   xTaskCreatePinnedToCore(
                     WiwiFifiControl,   /* Task function. */
                     "WiwiFifiControl",     /* name of task. */
@@ -248,7 +243,6 @@ void setup() {
                     1,           /* priority of the task */
                     &taskWiwiFifi,      /* Task handle to keep track of created task */
                     1);          /* pin task to core 1 */
-  delay(250);
   //Ready the light barrier input
   attachInterrupt(IRIN_PIN, isrLightBarrier, CHANGE);
 
@@ -258,8 +252,6 @@ void loop() {
   digitalWrite(RED_LED, HIGH);
   delay(5000);
   digitalWrite(RED_LED, LOW);
-  DartSpeed(starttime,endtime);
-  Serial.printf("speed:%lf m/s\n",dartspeed);
   delay(5000);
 
 }
