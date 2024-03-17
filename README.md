@@ -20,6 +20,7 @@ FastLed
 https://github.com/me-no-dev/ESPAsyncWebServer
 https://github.com/me-no-dev/AsyncTCP
 https://github.com/ayushsharma82/AsyncElegantOTA
+ArduinoJson(https://arduinojson.org/)
 
 
 Partition Scheme (for OTA!!!!):
