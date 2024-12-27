@@ -43,10 +43,11 @@ int pewpewLength[PEWPEW_MAXINDEX][SOUND_LENGTH] ={
 // P E W  P E W  C O N T R O L
 void PewPewPlayer(int sound[], int durations[]){
       for(int i = 0; i < SOUND_LENGTH; i++){   
-        ledcWriteTone(pwmChanBuzz0r, sound[i]);
+        ledcWriteTone(BUZZ0R_PIN, sound[i]);
         delay(durations[i]);
       }
 }
+
 void PewPewControl(void * param){
   int soundindex;
   PewPewPlayer(pewpewSounds[0],pewpewLength[0]);
@@ -54,7 +55,7 @@ void PewPewControl(void * param){
     if(usLastPewPewRun<usLastShortPress){   //pew pew with button
       Serial.write("PEW PEW PEW PEW");
       if(mostCur == MOTOR_OFF){
-        switch ( gunCur)
+        switch (gunCur)
         {
         case PARTY_MODE:
           Serial.println("party pew");
@@ -74,7 +75,7 @@ void PewPewControl(void * param){
         }
       }
       else{
-        switch ( gunCur )
+        switch (gunCur)
         {
         case DEATH_MODE:
           PewPewPlayer(pewpewSounds[1],pewpewLength[1]);

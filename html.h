@@ -6,7 +6,7 @@ const char index_html[]  = R"rawliteral(
       <title>BexxiGun</title>
     </head>
     <body>
-      <h1>BexxiGun 0.1 Webinterface 1</h1>
+      <h1>BexxiGun Web-Control</h1>
       <p><strong><div id="motorState"></div></strong></p>
       <p>last dart speed: <div id="dartSpeed"></div> </p>
       <p>max dart speed: <div id="maxdartSpeed"></div> </p>
@@ -15,6 +15,7 @@ const char index_html[]  = R"rawliteral(
         <button onclick="SendPARTY();" id="partybutton" value="PARTY_MODE">PARTY MODE</button>
         <button onclick="SendDTH();" id="deathbutton" value="DEATH_MODE">DEATH MODE</button>
         <button onclick="SendSNEAK();" id="sneakbutton" value="SNEAK_MODE">SNEAK MODE</button>
+        <button onclick="SendTVBGONE();" id="tvbgonebutton" value="TV_B_GONE_MODE">TV B GONE MODE</button>
       </div>
       <div><button onclick="SendColor();" id="hcolorbutton" >COLOR1</button>  <input type="range" id="hcolor" min="0" max="255" onchange="changeBG()" /></div>
     </body>
@@ -86,7 +87,23 @@ const char index_html[]  = R"rawliteral(
     }};
 
     xhr.send();
-    console.log("SEND Death");
+    console.log("SEND Sneak");
+  }
+
+  function SendTVBGONE() {
+    console.log("SEND TV b Gone");
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", window.location.href+document.getElementById("tvbgonebutton").value);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      console.log(xhr.status);
+      console.log(xhr.responseText);
+    }};
+
+    xhr.send();
+    console.log("SEND TV b Gone");
   }
 
   function SendColor() {
@@ -122,7 +139,7 @@ const char index_html[]  = R"rawliteral(
     xhr.open("GET", window.location.href+"GUNDATA");
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhr.send();
-    console.log("SEND GET DART SPEED");
+    console.log("SEND GET GUN STATE");
 
   },3000);
 

@@ -16,12 +16,10 @@ flashen:
 
 
 LIBS:
-FastLed
-https://github.com/me-no-dev/ESPAsyncWebServer
-https://github.com/me-no-dev/AsyncTCP
-https://github.com/ayushsharma82/AsyncElegantOTA
-ArduinoJson(https://arduinojson.org/)
-
+FastLed = 3.9.7
+https://github.com/me-no-dev/ESPAsyncWebServer = 3.4.0
+ https://github.com/ayushsharma82/ElegantOTA = 3.1.6
+ArduinoJson(https://arduinojson.org/) =7.2.1
 
 Partition Scheme (for OTA!!!!):
 Minimal SPIFFSS

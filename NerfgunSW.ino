@@ -5,8 +5,9 @@ Main Control File & Pins
 #include <Arduino.h>
 #include <FastLED.h>
 #include <WiFi.h>
-#include <AsyncElegantOTA.h>
-#include "ESPAsyncWebServer.h"
+#include <ElegantOTA.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include "pitches.h"
 #include "Wificredentials.h"
 
@@ -24,14 +25,14 @@ Main Control File & Pins
 enum GunState {
   PARTY_MODE = 0,
   DEATH_MODE = 1,
-  SNEAK_MODE = 2
+  SNEAK_MODE = 2,
+  TV_B_GONE_MODE = 3
 };
 volatile GunState gunCur;
 
 // Motor Globals
 void MotorControl(void * param);
 const int freqMotor = 2000;
-const int pwmChanMotor = 0;
 const int resMotor = 8;
 enum MotorState {
   MOTOR_OFF = 0,
@@ -45,12 +46,10 @@ volatile MotorState mostCur;
 // Pew Pew Globals
 void PewPewControl(void * param);
 const int freqBuzz0r = 2000;
-const int pwmChanBuzz0r = 4;
 const int resBuzz0r = 8;
 
 //LightBarrier Globals
 const int freqBarrier = 38000;
-const int pwmChanBarrier = 6;
 const int resBarrier = 8;
 volatile bool wasLightBarrierTriggered=false;
 volatile bool LightBarrierBlingBling=false;
@@ -168,28 +167,22 @@ void setup() {
 
 
   //set up the motor 
-  isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
-  ledcAttachPin(FLY_PIN, pwmChanMotor);
+  isPWMMotorOK=ledcAttach(FLY_PIN, freqMotor, resMotor);
   Serial.printf("PWM Motor: %d\n", isPWMMotorOK);
 
   //set up the nerv buzz0r
-  isPWMBuzz0rOK=ledcSetup(pwmChanBuzz0r, freqBuzz0r, resBuzz0r);
-  ledcAttachPin(BUZZ0R_PIN, pwmChanBuzz0r);
+  isPWMBuzz0rOK=ledcAttach(BUZZ0R_PIN, freqBuzz0r, resBuzz0r);
   Serial.printf("PWM Buzz0r: %d\n", isPWMBuzz0rOK);
 
   //set up the  Lightbarrier PWM LED
-  isPWMBarrierOK=ledcSetup(pwmChanBarrier, freqBarrier, resBarrier);
-  ledcAttachPin(IROUT_PIN, pwmChanBarrier);
-  ledcWrite(pwmChanBarrier, 128);
-  Serial.printf("PWM Lightbarrier: %d\n", isPWMBarrierOK);
+  //isPWMBarrierOK=ledcSetup(pwmChanBarrier, freqBarrier, resBarrier);
+  //ledcAttachPin(IROUT_PIN, pwmChanBarrier);
+  //ledcWrite(pwmChanBarrier, 128);
+  //Serial.printf("PWM Lightbarrier: %d\n", isPWMBarrierOK);
+  isPWMBarrierOK = LightBarrierSetup();
 
   //set up the rgb
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
-
-  //set up the motor 
-  isPWMMotorOK=ledcSetup(pwmChanMotor, freqMotor, resMotor);
-  ledcAttachPin(FLY_PIN, pwmChanMotor);
-  Serial.printf("PWM Motor: %d\n", isPWMMotorOK);
 
   //setup wifi
   WiFi.mode(WIFI_AP);

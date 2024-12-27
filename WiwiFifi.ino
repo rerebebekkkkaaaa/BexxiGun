@@ -4,6 +4,8 @@ WiwiFifi Control File
 */
 #include "html.h"
 #include <ArduinoJson.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 String processor(const String& var){
   Serial.println(var);
@@ -43,13 +45,19 @@ void WiwiFifiControl(void * param){
     Serial.print("Sneak");
     request->send_P(200, "text/html", index_html, processor);
   });
+  server.on("/TV_B_GONE_MODE", HTTP_POST, [](AsyncWebServerRequest *request){
+    gunCur=TV_B_GONE_MODE;
+    usLastWifiControl = millis();
+    Serial.print("tv");
+    request->send_P(200, "text/html", index_html, processor);
+  });
 
   //setup response to select a color
   server.on("/COLOR", HTTP_POST, [](AsyncWebServerRequest *request){
   usLastWifiControl = millis();
     //Get Color params from request
     if(request->hasParam("color")){
-      AsyncWebParameter* color = request->getParam("color");
+      const AsyncWebParameter* color = request->getParam("color");
       Serial.print(color->value());
       const char * cols=(color->value()).c_str();
       Serial.println("--> color");
@@ -85,11 +93,12 @@ void WiwiFifiControl(void * param){
 
 
   //add OTA update
-  AsyncElegantOTA.begin(&server);
+  ElegantOTA.begin(&server);
   // Start server
   server.begin();
 
    for(;;){
+    ElegantOTA.loop();
     delay(10000);
     //Serial.println("server listening....");
   }

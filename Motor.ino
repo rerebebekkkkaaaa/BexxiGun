@@ -25,12 +25,12 @@ void MotorControl(void * param) {
       case MOTOR_STARTING:
         //increase motor speed for 254 * 10 ms = 2.54seconds
         if(dutyCur<255) {
-          ledcWrite(pwmChanMotor, dutyCur);
+          ledcWrite(FLY_PIN, dutyCur);
           dutyCur+=1;
         } else {
           mostCur=MOTOR_SPINNING;
           gunCur=DEATH_MODE;
-          ledcWrite(pwmChanMotor, 255);
+          ledcWrite(FLY_PIN, 255);
         }
         break;
       case MOTOR_SPINNING:
@@ -43,7 +43,7 @@ void MotorControl(void * param) {
         break;
       case MOTOR_FREEFLY:
         if(dutyCur==0) {
-          ledcWrite(pwmChanMotor, 0);
+          ledcWrite(FLY_PIN, 0);
         }
         dutyCur+=1;
         if(dutyCur >= 400) {

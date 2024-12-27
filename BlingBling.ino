@@ -35,6 +35,7 @@ void Gradient3Mode(){
   delay(50);
   Serial.write("BLING BLING random 3 grad"); 
 }
+
 void SolidColorMode(CHSV color){
   CRGB crgbcol;
   hsv2rgb_raw(color,crgbcol);
@@ -46,6 +47,7 @@ void SolidColorMode(CHSV color){
   FastLED.show();
   delay(50);
 }
+
 void RainbowMode(){
   	fill_rainbow_circular(leds,NUM_LEDS,0,255);
     FastLED.show();
@@ -53,12 +55,11 @@ void RainbowMode(){
     Serial.write("BLING BLING Rainbow"); 
 }
 
-
 void PartyBlingBlingButton()
 {
   int partymode=random(BLINGBLINGPARTY_MAXINDEX);
   Serial.write(48+partymode); 
-  switch ( partymode)
+  switch (partymode)
   {
   case 0:
     RGBRandomMode();
@@ -104,7 +105,7 @@ void BlingBlingControl(void * param){
   for(;;){
     if(usLastRGBRun<usLastShortPress){    //change BlingBling with button
       usLastRGBRun=usLastShortPress;
-      switch ( gunCur )
+      switch (gunCur)
       {
       case PARTY_MODE:
         Serial.println("Party bling");
@@ -117,6 +118,10 @@ void BlingBlingControl(void * param){
       case SNEAK_MODE:
         Serial.println("sneak bling");
         Darkmode();
+        break;
+      case TV_B_GONE_MODE:
+        Serial.println("tv bling");
+        sendTVbGoneCodes();
         break;
       default:
         break;
@@ -137,6 +142,10 @@ void BlingBlingControl(void * param){
       case SNEAK_MODE:
         Serial.println("sneak bling");
         Darkmode();
+        break;
+      case TV_B_GONE_MODE:
+        Serial.println("tv bling");
+        sendTVbGoneCodes();
         break;
       default:
         break;
